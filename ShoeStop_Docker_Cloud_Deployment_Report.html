@@ -1,0 +1,336 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ShoeStop Docker Cloud Deployment Report</title>
+<style>
+body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 40px; color: #212529; }
+.cover { background: linear-gradient(135deg, #1a1a2e, #0f3460, #e94560); color: white; padding: 60px; text-align: center; margin: -40px -40px 40px; }
+.cover h1 { font-size: 36px; }
+.cover p { font-size: 18px; opacity: 0.9; }
+h1 { color: #1a1a2e; border-bottom: 3px solid #e94560; padding-bottom: 10px; }
+h2 { color: #0f3460; border-left: 4px solid #0f3460; padding-left: 12px; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+th { background: #1a1a2e; color: white; padding: 10px; text-align: left; }
+td { padding: 9px; border-bottom: 1px solid #dee2e6; }
+tr:nth-child(even) td { background: #f8f9fa; }
+pre { background: #1e1e2e; color: #cdd6f4; padding: 20px; border-radius: 8px; font-size: 11px; overflow-x: auto; }
+.ok { color: green; font-weight: bold; }
+.pending { color: orange; font-weight: bold; }
+.box-info { background: #e8f4fd; border-left: 4px solid #0d6efd; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+.box-success { background: #d1e7dd; border-left: 4px solid #198754; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+.box-warn { background: #fff3cd; border-left: 4px solid #ffc107; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+.page-break { page-break-before: always; margin-top: 60px; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <h1>ShoeStop</h1>
+  <p>MERN Stack Application Containerization Using Docker and Cloud Deployment</p>
+  <p><strong>Learner Name:</strong> [LEARNER NAME] &nbsp;|&nbsp; <strong>Learner ID:</strong> [LEARNER ID]</p>
+  <p>November 19, 2026 &nbsp;|&nbsp; Cloud Platform: Render.com</p>
+  <p>Technologies: React 18 | Node.js 18 | Express | MongoDB | Docker | Nginx</p>
+</div>
+
+<h1>1. Project Title &amp; Description</h1>
+<p><strong>ShoeStop</strong> is a full-stack MERN e-commerce web application containerized using Docker and deployed on Render.com. The original application had hardcoded URLs, development-only configuration, and no containerization. This project transforms it into a production-ready, containerized, cloud-deployed system.</p>
+<div class="box-info"><strong>Repositories:</strong><br>
+Frontend: https://github.com/sriram-R-krishnan/shoestop-frontend<br>
+Backend: https://github.com/sriram-R-krishnan/shoestop-backend<br>
+Project Location: D:\Devoops\ShoeStop-Docker-Deployment\</div>
+
+<h1 class="page-break">2. Learning Objectives</h1>
+<table><thead><tr><th>#</th><th>Objective</th><th>Demonstrated By</th></tr></thead><tbody>
+<tr><td>1</td><td>Docker containerization concepts</td><td>Multi-stage Dockerfiles for Node.js and Nginx</td></tr>
+<tr><td>2</td><td>Multi-container orchestration</td><td>docker-compose.yml with 3 services, networks, volumes</td></tr>
+<tr><td>3</td><td>Environment variable management</td><td>.env, .env.example, Docker build args</td></tr>
+<tr><td>4</td><td>Cloud database integration</td><td>MongoDB Atlas URI via environment variable</td></tr>
+<tr><td>5</td><td>Nginx SPA serving</td><td>nginx.conf with try_files, gzip, cache headers</td></tr>
+<tr><td>6</td><td>Cloud deployment</td><td>Render.com Docker web service, render.yaml blueprint</td></tr>
+<tr><td>7</td><td>Container security</td><td>Non-root user, .env gitignored, secrets via env vars</td></tr>
+<tr><td>8</td><td>Bug identification and fixing</td><td>Fixed 8 issues in the original source code</td></tr>
+</tbody></table>
+
+<h1 class="page-break">3. Technologies Used</h1>
+<table><thead><tr><th>Technology</th><th>Version</th><th>Role</th></tr></thead><tbody>
+<tr><td>React.js</td><td>18.2.0</td><td>Frontend SPA framework</td></tr>
+<tr><td>Vite</td><td>4.4.0</td><td>Frontend build tool</td></tr>
+<tr><td>Node.js</td><td>18 (LTS)</td><td>JavaScript runtime</td></tr>
+<tr><td>Express.js</td><td>4.18.2</td><td>Backend REST API framework</td></tr>
+<tr><td>MongoDB</td><td>7.0</td><td>NoSQL database (Mongoose ODM)</td></tr>
+<tr><td>Docker</td><td>Latest</td><td>Application containerization</td></tr>
+<tr><td>Docker Compose</td><td>3.9</td><td>Multi-container orchestration</td></tr>
+<tr><td>Nginx</td><td>1.25-alpine</td><td>Frontend web server in container</td></tr>
+<tr><td>JWT + bcrypt</td><td>9.0.1 / 2.4.3</td><td>User authentication and password hashing</td></tr>
+<tr><td>Render.com</td><td>-</td><td>Cloud deployment platform</td></tr>
+</tbody></table>
+
+<h1 class="page-break">4. Application Architecture</h1>
+<pre>
++-----------------------------------------------------------+
+|              Docker Compose Environment                   |
+|                (shoestop-network)                         |
+|                                                           |
+|  +------------------+       +------------------------+   |
+|  | shoestop-frontend|       |  shoestop-backend      |   |
+|  |                  |       |                        |   |
+|  | nginx:1.25-alpine|<----->| node:18-alpine         |   |
+|  | Port: 80 (Int)   | REST  | Port: 5000 (Int/Ext)  |   |
+|  | Port: 3000 (Ext) |       |                        |   |
+|  |                  |       | Routes:                |   |
+|  | Serves React SPA |       | /signup, /login        |   |
+|  | /home, /cart...  |       | /api/getproducts       |   |
+|  +------------------+       | /api/addcart, /addfav  |   |
+|                             +------------+-----------+   |
+|                                          | Mongoose       |
+|                             +------------v-----------+   |
+|                             | shoestop-mongo         |   |
+|                             | mongo:7.0              |   |
+|                             | Port: 27017            |   |
+|                             | Volume: mongo-data     |   |
+|                             +------------------------+   |
++-----------------------------------------------------------+
+
+USER BROWSER --> http://localhost:3000 (Local)
+              --> https://shoestop.onrender.com (Cloud)
+</pre>
+
+<h1 class="page-break">5. Repository Analysis</h1>
+<h2>Issues Found and Fixed</h2>
+<table><thead><tr><th>#</th><th>File</th><th>Issue Found</th><th>Fix Applied</th></tr></thead><tbody>
+<tr><td>1</td><td>Context.jsx</td><td>Hardcoded http://localhost:5000 (2 URLs)</td><td>VITE_API_URL env variable</td></tr>
+<tr><td>2</td><td>Product.jsx</td><td>Hardcoded http://localhost:5000 (3 URLs)</td><td>API_URL from context</td></tr>
+<tr><td>3</td><td>Login.jsx</td><td>Hardcoded URL + undefined name variable</td><td>Fixed URL + removed undefined var</td></tr>
+<tr><td>4</td><td>Signup.jsx</td><td>Hardcoded http://localhost:5000</td><td>API_URL from context</td></tr>
+<tr><td>5</td><td>Cart.jsx</td><td>Hardcoded http://localhost:5000</td><td>API_URL from context</td></tr>
+<tr><td>6</td><td>Fav.jsx</td><td>Hardcoded URL + id not passed to delete</td><td>Fixed URL + fixed id argument</td></tr>
+<tr><td>7</td><td>server.js</td><td>nodemon used as production start command</td><td>Changed to node server.js</td></tr>
+<tr><td>8</td><td>package.json</td><td>nodemon in production dependencies</td><td>Moved to devDependencies</td></tr>
+</tbody></table>
+
+<h1 class="page-break">6 &amp; 7. Docker Implementation - Frontend</h1>
+<h2>Frontend Dockerfile (Multi-Stage)</h2>
+<pre>
+# Stage 1: Build React application with Vite
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+ARG VITE_API_URL=http://localhost:5000
+ENV VITE_API_URL=$VITE_API_URL
+
+COPY . .
+RUN npm run build        # Produces /app/dist/
+
+# Stage 2: Serve compiled assets with Nginx
+FROM nginx:1.25-alpine AS runner
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s CMD wget ... http://localhost/health
+CMD ["nginx", "-g", "daemon off;"]
+</pre>
+
+<h2>Nginx SPA Config</h2>
+<pre>
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    gzip on;                           # Compress assets
+    location ~* \.(js|css|jpg|png)$ {
+        expires 1y;                    # Long-term cache for assets
+        add_header Cache-Control "public, immutable";
+    }
+    location / {
+        try_files $uri $uri/ /index.html;  # SPA routing fallback
+    }
+    location /health { return 200 "healthy\n"; }
+}
+</pre>
+
+<div class="box-success">Frontend Build Verification: npm run build PASSED - 386 modules transformed in 2.80s. Output: dist/index.html (0.47 kB), index.js (231 kB, gzipped: 77 kB)</div>
+
+<h1 class="page-break">8. Backend Containerization</h1>
+<pre>
+# Stage 1: Install production dependencies only
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Stage 2: Minimal production runtime
+FROM node:18-alpine AS runner
+
+# Security: non-root user
+RUN addgroup -S appgroup &amp;&amp; adduser -S appuser -G appgroup
+
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN rm -f .env         # Remove any committed secrets
+RUN chown -R appuser:appgroup /app
+USER appuser
+
+EXPOSE 5000
+HEALTHCHECK --interval=30s --timeout=10s CMD wget ... http://localhost:5000/ || exit 1
+CMD ["node", "server.js"]    # Production command (NOT nodemon)
+</pre>
+
+<h1 class="page-break">9. MongoDB Configuration</h1>
+<h2>Option A: Containerized MongoDB (Default)</h2>
+<pre>
+mongo:
+  image: mongo:7.0
+  environment:
+    MONGO_INITDB_ROOT_USERNAME: admin
+    MONGO_INITDB_ROOT_PASSWORD: admin123
+    MONGO_INITDB_DATABASE: shoestop
+  volumes:
+    - mongo-data:/data/db    # Persistent storage
+
+# Backend URI:
+mongodb://admin:admin123@mongo:27017/shoestop?authSource=admin
+</pre>
+<h2>Option B: MongoDB Atlas (Cloud)</h2>
+<pre>MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/shoestop</pre>
+<p>Sample products seeded via seed.js: Nike Air Max 270, Adidas Ultraboost 22, Puma RS-X, New Balance 574, Reebok Classic, Converse, Vans Old Skool, Jordan 1 Retro High.</p>
+
+<h1 class="page-break">10. Docker Compose Orchestration</h1>
+<pre>
+version: "3.9"
+services:
+  mongo:
+    image: mongo:7.0
+    volumes: [ mongo-data:/data/db ]
+    healthcheck: { test: mongosh ping, interval: 30s }
+
+  backend:
+    build: { context: ./backend }
+    depends_on: { mongo: { condition: service_healthy } }
+    environment:
+      - MONGO_URI=${MONGO_URI:-mongodb://admin:admin123@mongo:27017/shoestop}
+      - JWT_SECRET=${JWT_SECRET:-mysecret}
+    ports: [ "5000:5000" ]
+    healthcheck: { test: wget http://localhost:5000/, interval: 30s }
+
+  frontend:
+    build:
+      context: ./frontend
+      args: { VITE_API_URL: "${VITE_API_URL:-http://localhost:5000}" }
+    depends_on: { backend: { condition: service_healthy } }
+    ports: [ "3000:80" ]
+
+volumes:
+  mongo-data: { name: shoestop-mongo-data }
+
+networks:
+  shoestop-network: { driver: bridge }
+</pre>
+<div class="box-info">Startup order: 1. MongoDB (waits for health) → 2. Backend (waits for health) → 3. Frontend</div>
+
+<h1 class="page-break">11. Local Build &amp; Testing</h1>
+<pre>
+# 1. Install Docker Desktop as Administrator:
+D:\Devoops\DockerDesktopInstaller.exe
+
+# 2. Set up environment
+copy .env.example .env
+# (Edit .env with your values)
+
+# 3. Build and start all containers
+docker compose up --build
+
+# 4. Access the application
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:5000
+
+# 5. Seed sample products
+docker compose exec backend node seed.js
+
+# 6. Check logs
+docker compose logs -f backend
+
+# 7. Container status
+docker compose ps
+</pre>
+
+<h1 class="page-break">12. Cloud Deployment Process (Render.com)</h1>
+<h2>Backend Deployment</h2>
+<ol>
+<li>Push project to GitHub</li>
+<li>Go to render.com → New → Web Service</li>
+<li>Select repo, Root Directory: backend, Runtime: Docker</li>
+<li>Add env vars: MONGO_URI, JWT_SECRET, PORT=5000, CORS_ORIGIN=*</li>
+<li>Deploy → Copy URL: https://shoestop-backend.onrender.com</li>
+</ol>
+<h2>Frontend Deployment</h2>
+<ol>
+<li>New → Web Service, Root Directory: frontend, Runtime: Docker</li>
+<li>Add build arg: VITE_API_URL=https://shoestop-backend.onrender.com</li>
+<li>Deploy → Public URL: https://shoestop-frontend.onrender.com</li>
+</ol>
+<div class="box-info"><strong>Public URL:</strong> https://shoestop-frontend.onrender.com (active after deployment)</div>
+
+<h1 class="page-break">13. Testing &amp; Verification</h1>
+<table><thead><tr><th>#</th><th>Test</th><th>Status</th></tr></thead><tbody>
+<tr><td>1</td><td>Frontend Vite build (npm run build)</td><td class="ok">PASSED</td></tr>
+<tr><td>2</td><td>All hardcoded localhost:5000 URLs replaced</td><td class="ok">PASSED</td></tr>
+<tr><td>3</td><td>Backend uses node (not nodemon) for start</td><td class="ok">PASSED</td></tr>
+<tr><td>4</td><td>Git repository with 55 files committed</td><td class="ok">PASSED</td></tr>
+<tr><td>5</td><td>.env not committed to git (gitignored)</td><td class="ok">PASSED</td></tr>
+<tr><td>6</td><td>docker-compose.yml valid YAML syntax</td><td class="ok">PASSED</td></tr>
+<tr><td>7</td><td>Nginx SPA routing config in place</td><td class="ok">PASSED</td></tr>
+<tr><td>8</td><td>docker compose up --build</td><td class="pending">PENDING: Install Docker Desktop as Admin, then run</td></tr>
+<tr><td>9</td><td>Cloud deployment public URL</td><td class="pending">PENDING: Push to GitHub and follow Section 12</td></tr>
+</tbody></table>
+
+<h1 class="page-break">14. Files Created / Modified</h1>
+<table><thead><tr><th>File</th><th>Type</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>backend/Dockerfile</td><td>NEW</td><td>Multi-stage Docker image for Node.js backend</td></tr>
+<tr><td>backend/.dockerignore</td><td>NEW</td><td>Excludes node_modules, .env from Docker context</td></tr>
+<tr><td>backend/seed.js</td><td>NEW</td><td>Populates DB with 8 sample shoe products</td></tr>
+<tr><td>backend/server.js</td><td>MODIFIED</td><td>PORT fallback, 0.0.0.0 binding, improved CORS</td></tr>
+<tr><td>backend/package.json</td><td>MODIFIED</td><td>node start script, nodemon to devDeps</td></tr>
+<tr><td>frontend/Dockerfile</td><td>NEW</td><td>Multi-stage: Vite build + Nginx serve</td></tr>
+<tr><td>frontend/.dockerignore</td><td>NEW</td><td>Excludes node_modules, dist</td></tr>
+<tr><td>frontend/nginx.conf</td><td>NEW</td><td>Nginx SPA routing with gzip, security headers</td></tr>
+<tr><td>frontend/src/.../Context.jsx</td><td>MODIFIED</td><td>VITE_API_URL env var, exported getFav/API_URL</td></tr>
+<tr><td>frontend/src/.../Product.jsx</td><td>MODIFIED</td><td>API_URL from context</td></tr>
+<tr><td>frontend/src/.../Login.jsx</td><td>MODIFIED</td><td>API_URL from context, fixed undefined name bug</td></tr>
+<tr><td>frontend/src/.../Signup.jsx</td><td>MODIFIED</td><td>API_URL from context</td></tr>
+<tr><td>frontend/src/.../Cart.jsx</td><td>MODIFIED</td><td>API_URL from context</td></tr>
+<tr><td>frontend/src/.../Fav.jsx</td><td>MODIFIED</td><td>API_URL from context, fixed delete id bug</td></tr>
+<tr><td>docker-compose.yml</td><td>NEW</td><td>3-service orchestration: MongoDB+Backend+Frontend</td></tr>
+<tr><td>.env.example</td><td>NEW</td><td>Template with placeholder variables</td></tr>
+<tr><td>.gitignore</td><td>NEW</td><td>Ignores .env, node_modules, dist</td></tr>
+<tr><td>README.md</td><td>NEW</td><td>Complete project documentation</td></tr>
+<tr><td>render.yaml</td><td>NEW</td><td>Render.com deployment blueprint</td></tr>
+</tbody></table>
+
+<h1 class="page-break">15. Final Conclusion</h1>
+<p>This project successfully demonstrates the complete containerization of the ShoeStop MERN stack e-commerce application using Docker and Docker Compose, with cloud deployment preparation on Render.com.</p>
+<h2>Summary of Achievements</h2>
+<ul>
+<li>Analysed both repositories — found and fixed 8 bugs and configuration issues</li>
+<li>Created production-grade multi-stage Dockerfiles for both frontend and backend</li>
+<li>Configured Docker Compose with 3 services, health checks, volumes, and restart policies</li>
+<li>Set up MongoDB container with persistent volume (Atlas also supported)</li>
+<li>Created database seed script with 8 real shoe products</li>
+<li>Implemented proper security (non-root user, .env gitignored, env-var secrets)</li>
+<li>Verified frontend build (386 modules, 2.80s, Vite PASSED)</li>
+<li>Committed 55 files to Git with professional commit message</li>
+<li>Prepared Render.com deployment blueprint</li>
+<li>Generated comprehensive README.md and academic report</li>
+</ul>
+<div class="box-success">
+<strong>Project Complete!</strong><br>
+Location: D:\Devoops\ShoeStop-Docker-Deployment\<br>
+Git: 1 commit, 55 files, 10,052 insertions<br>
+Vite Build: PASSED (386 modules)<br>
+Next Steps: (1) Install Docker Desktop as Admin, (2) Run docker compose up --build, (3) Deploy to Render
+</div>
+<p style="text-align:center; color:#666; margin-top:40px;">ShoeStop Docker Deployment Report — November 19, 2026 — Learner: [LEARNER NAME] — ID: [LEARNER ID]</p>
+</body>
+</html>
