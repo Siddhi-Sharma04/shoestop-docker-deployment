@@ -29,3 +29,7 @@ Thumbs.db
 
 # ─── Docker ──────────────────────────────────────────────────
 # (don't ignore Dockerfiles or docker-compose — they should be committed)
+
+# Report files (kept local only)
+*.pdf
+*.html
