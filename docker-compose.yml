@@ -1,0 +1,95 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+#  ShoeStop – Docker Compose (Local Development / Self-hosted)
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ─── MongoDB (Containerized fallback) ─────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: shoestop-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: shoestop
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - shoestop-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+
+  # ─── Backend (Node.js / Express) ───────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shoestop-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - port=5000
+      # Uses local mongo container URI by default; override with Atlas URI in .env
+      - mongoURI=${MONGO_URI:-mongodb://admin:admin123@mongo:27017/shoestop?authSource=admin}
+      - MONGO_URI=${MONGO_URI:-mongodb://admin:admin123@mongo:27017/shoestop?authSource=admin}
+      - JWT_SECRET=${JWT_SECRET:-mysecret}
+      - expiry=${JWT_EXPIRY:-30d}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - NODE_ENV=production
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - shoestop-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+
+  # ─── Frontend (React + Nginx) ───────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # This bakes the backend URL into the React bundle at build time
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000}
+    container_name: shoestop-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - shoestop-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+# ─── Persistent Storage ────────────────────────────────────────
+volumes:
+  mongo-data:
+    name: shoestop-mongo-data
+
+# ─── Shared Network ────────────────────────────────────────────
+networks:
+  shoestop-network:
+    driver: bridge
+    name: shoestop-network

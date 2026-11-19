@@ -1,0 +1,47 @@
+# Render.com Blueprint Configuration
+# Deploy this via: render.com → New → Blueprint → connect repo → auto-deploy
+
+services:
+  # ─── Backend Service ────────────────────────────────────────────
+  - type: web
+    name: shoestop-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    branch: main
+    envVars:
+      - key: PORT
+        value: "5000"
+      - key: port
+        value: "5000"
+      - key: MONGO_URI
+        sync: false           # Must be set manually in Render dashboard
+      - key: mongoURI
+        sync: false
+      - key: JWT_SECRET
+        sync: false           # Must be set manually in Render dashboard
+      - key: expiry
+        value: "30d"
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: NODE_ENV
+        value: production
+
+  # ─── Frontend Service ────────────────────────────────────────────
+  - type: web
+    name: shoestop-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    region: oregon
+    branch: main
+    buildArgs:
+      - key: VITE_API_URL
+        generateValue: false
+        value: https://shoestop-backend.onrender.com   # Update with actual backend URL
+    envVars:
+      - key: VITE_API_URL
+        value: https://shoestop-backend.onrender.com   # Update with actual backend URL
